@@ -27,7 +27,7 @@ namespace Client
         public App()
         {
             InitializeComponent();
-            SplashFactory = (e) => new Views.Splash(e);
+            SplashFactory = (e) => new Splash(e);
 
             #region app settings
 
@@ -40,7 +40,7 @@ namespace Client
         public override async Task OnStartAsync(StartKind startKind, IActivatedEventArgs args)
         {
             // TODO: add your long-running task here
-            await NavigationService.NavigateAsync(typeof(Views.MainPage));
+            await NavigationService.NavigateAsync(typeof(MainPage));
         }
 
         public override INavigable ResolveForPage(Page page, NavigationService navigationService)

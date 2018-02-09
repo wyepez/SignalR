@@ -1,18 +1,17 @@
-﻿using System;
-using Client.ViewModels;
-using Windows.UI.Xaml;
+﻿using Client.ViewModels;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using System.Collections.ObjectModel;
 
 namespace Client.Views
 {
     public sealed partial class MainPage : Page
     {
+        private MainPageViewModel ViewModel => DataContext as MainPageViewModel;
+
         public MainPage()
         {
             InitializeComponent();
-            NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
+            NavigationCacheMode = NavigationCacheMode.Enabled;
         }
     }
 }

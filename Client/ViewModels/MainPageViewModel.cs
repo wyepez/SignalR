@@ -1,61 +1,97 @@
-﻿using Template10.Mvvm;
-using System.Collections.Generic;
+﻿using Microsoft.AspNet.SignalR.Client;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Template10.Services.NavigationService;
+using Template10.Mvvm;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
 namespace Client.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
+        private string groupName;
+        public string GroupName
+        {
+            get => groupName;
+            set => Set(ref groupName, value);
+        }
+
+        private string userName;
+        public string UserName
+        {
+            get => userName;
+            set => Set(ref userName, value);
+        }
+
+        private string error;
+        public string Error
+        {
+            get => error;
+            set => Set(ref error, value);
+        }
+
         public MainPageViewModel()
         {
-            if (Windows.ApplicationModel.DesignMode.DesignModeEnabled)
-            {
-                Value = "Designtime value";
-            }
         }
 
-        string _Value = "Gas";
-        public string Value { get { return _Value; } set { Set(ref _Value, value); } }
-
-        public override async Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> suspensionState)
+        public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
-            if (suspensionState.Any())
+            if (parameter != null)
             {
-                Value = suspensionState[nameof(Value)]?.ToString();
+                dynamic p = parameter;
+                GroupName = p.GroupName;
+                UserName = p.UserName;
             }
-            await Task.CompletedTask;
+            return base.OnNavigatedToAsync(parameter, mode, state);
         }
 
-        public override async Task OnNavigatedFromAsync(IDictionary<string, object> suspensionState, bool suspending)
+        private bool isEnabled = true;
+        private DelegateCommand joinCommand;
+        public DelegateCommand JoinCommand => joinCommand ?? (joinCommand = new DelegateCommand(async () =>
         {
-            if (suspending)
+            isEnabled = false; JoinCommand.RaiseCanExecuteChanged();
+            Error = string.Empty;
+            string groupName = GroupName.Trim();
+            string userName = UserName.Trim();
+            if (groupName.Length == 0 || userName.Length == 0)
             {
-                suspensionState[nameof(Value)] = Value;
+                Error = "Group & user name can't be empty.";
+                isEnabled = true; JoinCommand.RaiseCanExecuteChanged();
+                return;
             }
-            await Task.CompletedTask;
-        }
+            //Connect to hub 
+            App myApp = (Application.Current as App);
+            if (myApp.HubConnection.State != ConnectionState.Connected)
+            {
+                try
+                {
+                    await myApp.HubConnection.Start();
+                }
+                catch
+                {
+                    Error = $"Can't connect to server {myApp.HubConnection.Url}";
+                    isEnabled = true; JoinCommand.RaiseCanExecuteChanged();
+                    return;
+                }
+            }
+            //join to group
+            if (myApp.HubConnection.State == ConnectionState.Connected)
+            {
+                await myApp.HubProxy.Invoke("JoinGroup", groupName);
+                NavigationService.Navigate(typeof(Views.ChatRoomPage), new { GroupName = groupName, UserName = userName });
+            }
+            else
+            {
+                Error = $"Can't connect to server {myApp.HubConnection.Url}";
+            }
+            isEnabled = true; JoinCommand.RaiseCanExecuteChanged();
+        }, () => isEnabled));
 
-        public override async Task OnNavigatingFromAsync(NavigatingEventArgs args)
+        private DelegateCommand<string> footerCommand;
+        public DelegateCommand<string> FooterCommand => footerCommand ?? (footerCommand = new DelegateCommand<string>(async (link) =>
         {
-            args.Cancel = false;
-            await Task.CompletedTask;
-        }
-
-        public void GotoDetailsPage() =>
-            NavigationService.Navigate(typeof(Views.DetailPage), Value);
-
-        public void GotoSettings() =>
-            NavigationService.Navigate(typeof(Views.SettingsPage), 0);
-
-        public void GotoPrivacy() =>
-            NavigationService.Navigate(typeof(Views.SettingsPage), 1);
-
-        public void GotoAbout() =>
-            NavigationService.Navigate(typeof(Views.SettingsPage), 2);
-
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(link));
+        }));
     }
 }

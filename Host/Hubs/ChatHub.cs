@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using System;
 using System.Threading.Tasks;
 
 namespace Host.Hubs
 {
+    [HubName("ChatHub")]
     public class ChatHub : Hub
     {
         /// <summary> 

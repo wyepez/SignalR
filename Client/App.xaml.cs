@@ -1,21 +1,29 @@
-﻿using System;
-using Windows.UI.Xaml;
+﻿using Client.ViewModels;
+using Client.Views;
+using Microsoft.AspNet.SignalR.Client;
 using System.Threading.Tasks;
-using Client.Services.SettingsServices;
-using Windows.ApplicationModel.Activation;
-using Template10.Mvvm;
 using Template10.Common;
-using System.Linq;
+using Template10.Services.NavigationService;
+using Windows.ApplicationModel.Activation;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 
 namespace Client
 {
-    /// Documentation on APIs used in this page:
-    /// https://github.com/Windows-XAML/Template10/wiki
-
     [Bindable]
     sealed partial class App : BootStrapper
     {
+        #region SignalR
+        public HubConnection HubConnection { get; set; }
+        public IHubProxy HubProxy { get; set; }
+
+        private void SignalR()
+        {
+            HubConnection = new HubConnection("http://127.0.0.1:8082");
+            HubProxy = HubConnection.CreateHubProxy("ChatHub");
+        }
+        #endregion
+
         public App()
         {
             InitializeComponent();
@@ -24,10 +32,11 @@ namespace Client
             #region app settings
 
             // some settings must be set in app.constructor
-            var settings = SettingsService.Instance;
-            RequestedTheme = settings.AppTheme;
-            CacheMaxDuration = settings.CacheMaxDuration;
-            ShowShellBackButton = settings.UseShellBackButton;
+            //var settings = SettingsService.Instance;
+            //RequestedTheme = settings.AppTheme;
+            //CacheMaxDuration = settings.CacheMaxDuration;
+            //ShowShellBackButton = settings.UseShellBackButton;
+            SignalR();
 
             #endregion
         }
@@ -36,6 +45,20 @@ namespace Client
         {
             // TODO: add your long-running task here
             await NavigationService.NavigateAsync(typeof(Views.MainPage));
+        }
+
+        public override INavigable ResolveForPage(Page page, NavigationService navigationService)
+        {
+            var locator = Resources["Locator"] as UnityLocator;
+            switch (page)
+            {
+                case MainPage p:
+                    return locator.MainPageViewModel;
+                case ChatRoomPage p:
+                    return locator.ChatRoomPageViewModel;
+                default:
+                    return base.ResolveForPage(page, navigationService);
+            }
         }
     }
 }

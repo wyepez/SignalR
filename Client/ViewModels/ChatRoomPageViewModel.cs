@@ -4,6 +4,7 @@ using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Template10.Common;
 using Template10.Mvvm;
@@ -65,6 +66,7 @@ namespace Client.ViewModels
 
         private void ReceiveMessage(string userName, string message, DateTime sendTime)
         {
+            Debug.WriteLine($"{nameof(ReceiveMessage)}({nameof(userName)}: \"{userName}\", {nameof(message)}: \"{message}\", {nameof(sendTime)}: \"{sendTime}\")");
             WindowWrapper.Current().Dispatcher.Dispatch(() => { Messages.Add($"{sendTime.ToString("MM-dd HH:mm:ss")}\n{userName}: {message}"); });
         }
 

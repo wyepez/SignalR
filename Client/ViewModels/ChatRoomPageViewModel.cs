@@ -1,4 +1,5 @@
-﻿using Client.Views;
+﻿using Client.Services;
+using Client.Views;
 using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace Client.ViewModels
 {
     public class ChatRoomPageViewModel : ViewModelBase
     {
+        private IChatService chatService;
+
         private string groupName;
         public string GroupName
         {
@@ -44,8 +47,9 @@ namespace Client.ViewModels
         private IDisposable ReceiveMessageHandler { get; set; }
         public ObservableCollection<string> Messages { get; set; }
 
-        public ChatRoomPageViewModel()
+        public ChatRoomPageViewModel(IChatService chatService)
         {
+            this.chatService = chatService;
             Messages = new ObservableCollection<string>();
         }
 
@@ -55,7 +59,7 @@ namespace Client.ViewModels
             GroupName = info.GroupName;
             UserName = info.UserName;
             App myApp = (Application.Current as App);
-            ReceiveMessageHandler = myApp.HubProxy.On<string, string, DateTime>("receivemessage", ReceiveMessage);
+            ReceiveMessageHandler = chatService.RegisterReceiveMessageCallback(ReceiveMessage);
             return base.OnNavigatedToAsync(parameter, mode, state);
         }
 
@@ -69,7 +73,7 @@ namespace Client.ViewModels
         {
             Error = string.Empty;
             var myApp = (Application.Current as App);
-            if (myApp.HubConnection.State != ConnectionState.Connected)
+            if (chatService.HubConnection.State != ConnectionState.Connected)
             {
                 Error = "Disconnected!";
                 return;
@@ -78,7 +82,7 @@ namespace Client.ViewModels
             string message = Message.Trim();
             if (message.Length > 0)
             {
-                myApp.HubProxy.Invoke("SendToGroup", GroupName, UserName, message, DateTime.Now);
+                chatService.SendToGroup(GroupName, UserName, message, DateTime.Now);
             }
             Message = string.Empty;
         }));
@@ -87,9 +91,9 @@ namespace Client.ViewModels
         public DelegateCommand ExitCommand => exitCommand ?? (exitCommand = new DelegateCommand(async () =>
         {
             App myApp = (Application.Current as App);
-            if (myApp.HubConnection.State == ConnectionState.Connected)
+            if (chatService.HubConnection.State == ConnectionState.Connected)
             {
-                await myApp.HubProxy.Invoke("LeaveGroup", GroupName);
+                await chatService.LeaveGroup(groupName);
                 ReceiveMessageHandler.Dispose();
             }
             NavigationService.Navigate(typeof(MainPage), new { GroupName, UserName });

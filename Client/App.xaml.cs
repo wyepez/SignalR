@@ -1,6 +1,5 @@
 ﻿using Client.ViewModels;
 using Client.Views;
-using Microsoft.AspNet.SignalR.Client;
 using System.Threading.Tasks;
 using Template10.Common;
 using Template10.Services.NavigationService;
@@ -13,17 +12,6 @@ namespace Client
     [Bindable]
     sealed partial class App : BootStrapper
     {
-        #region SignalR
-        public HubConnection HubConnection { get; set; }
-        public IHubProxy HubProxy { get; set; }
-
-        private void SignalR()
-        {
-            HubConnection = new HubConnection("http://127.0.0.1:8082");
-            HubProxy = HubConnection.CreateHubProxy("ChatHub");
-        }
-        #endregion
-
         public App()
         {
             InitializeComponent();
@@ -32,7 +20,6 @@ namespace Client
             #region app settings
 
             ShowShellBackButton = false;
-            SignalR();
 
             #endregion
         }

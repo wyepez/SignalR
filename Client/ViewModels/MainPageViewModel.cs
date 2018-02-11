@@ -1,5 +1,4 @@
 ﻿using Client.Services;
-using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ namespace Client.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
-        private IChatService chatService;
+        private IHub hub;
 
         private string groupName;
         public string GroupName
@@ -34,9 +33,9 @@ namespace Client.ViewModels
             set => Set(ref error, value);
         }
 
-        public MainPageViewModel(IChatService chatService)
+        public MainPageViewModel(IHub hub)
         {
-            this.chatService = chatService;
+            this.hub = hub;
         }
 
         public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
@@ -66,28 +65,28 @@ namespace Client.ViewModels
             }
             //Connect to hub 
             App myApp = (Application.Current as App);
-            if (chatService.HubConnection.State != ConnectionState.Connected)
+            if (!hub.IsConnected)
             {
                 try
                 {
-                    await chatService.HubConnection.Start();
+                    await hub.Start();
                 }
                 catch
                 {
-                    Error = $"Can't connect to server {chatService.HubConnection.Url}";
+                    Error = $"Can't connect to server {hub.Url}";
                     isEnabled = true; JoinCommand.RaiseCanExecuteChanged();
                     return;
                 }
             }
             //join to group
-            if (chatService.HubConnection.State == ConnectionState.Connected)
+            if (hub.IsConnected)
             {
-                await chatService.JoinGroup(groupName);
+                await hub.ChatProxy.JoinGroup(groupName);
                 NavigationService.Navigate(typeof(Views.ChatRoomPage), new { GroupName = groupName, UserName = userName });
             }
             else
             {
-                Error = $"Can't connect to server {chatService.HubConnection.Url}";
+                Error = $"Can't connect to server {hub.Url}";
             }
             isEnabled = true; JoinCommand.RaiseCanExecuteChanged();
         }, () => isEnabled));

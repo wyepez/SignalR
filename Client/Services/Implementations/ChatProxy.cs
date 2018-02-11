@@ -4,16 +4,13 @@ using System.Threading.Tasks;
 
 namespace Client.Services
 {
-    public class ChatService : IChatService
+    public class ChatProxy : IChatProxy
     {
         private IHubProxy hubProxy;
 
-        public HubConnection HubConnection { get; set; }
-
-        public ChatService(HubConnection hubConnection, IHubProxy hubProxy)
+        public ChatProxy(IHubProxy hubProxy)
         {
             this.hubProxy = hubProxy;
-            HubConnection = hubConnection;
         }
 
         public Task JoinGroup(string groupName)

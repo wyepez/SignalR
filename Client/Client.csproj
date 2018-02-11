@@ -98,8 +98,10 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Implementations\ChatService.cs" />
-    <Compile Include="Services\IChatService.cs" />
+    <Compile Include="Services\Implementations\Hub.cs" />
+    <Compile Include="Services\IHub.cs" />
+    <Compile Include="Services\Implementations\ChatProxy.cs" />
+    <Compile Include="Services\IChatProxy.cs" />
     <Compile Include="ViewModels\ChatRoomPageViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
     <Compile Include="ViewModels\UnityLocator.cs" />

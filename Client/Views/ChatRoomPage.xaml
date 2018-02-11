@@ -41,7 +41,7 @@
                     <TextBlock Grid.Column="3" Text="{x:Bind ViewModel.UserName, Mode=OneWay}" VerticalAlignment="Center" />
                     <Button Grid.Column="4" Content="Exit" Margin="10,0,20,0" Style="{ThemeResource TextBlockButtonStyle}" VerticalAlignment="Center" Command="{x:Bind ViewModel.ExitCommand}" />
                 </Grid>
-                <ListView Grid.Row="1" Background="AliceBlue" ItemsSource="{x:Bind ViewModel.Messages}" />
+                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Messages}" />
                 <Grid Grid.Row="2" Margin="0,5,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
